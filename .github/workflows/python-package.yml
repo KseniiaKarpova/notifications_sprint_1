@@ -1,8 +1,10 @@
 name: CI
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
-    branches: [master]
+    branches: [ "main" ]
 
 jobs:
 
@@ -18,18 +20,23 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install wemake-python-styleguide mypy
+
     - name: Lint with wemake-python-styleguide
       run: wemake-python-styleguide .
+
     - name: Type check with mypy
       run: mypy .
+
     - name: Generate HTML report
       run: |
         wemake-python-styleguide . --output-file=lint_report.html
         mypy . --html-report=mypy_report.html
+
     - name: Notify Telegram
       if: ${{ failure() || success() }}
       env:
