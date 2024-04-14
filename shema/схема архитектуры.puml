@@ -1,0 +1,64 @@
+@startuml
+!include <logos/django>
+!include <logos/postgresql>
+!include <logos/redis>
+!include <logos/kafka>
+
+title Архитектура Проекта (Сервис нотификации)
+
+actor "Админ"
+actor "Клиент"
+
+package AuthAPI {
+    [auth_api] 
+    database "<$postgresql>" as auth_postgres #White
+    database "<$redis>" as auth_redis #White
+}
+package Admin {
+    [FastUI]
+    database templete_mongo #White
+}
+package API {
+
+}
+package UGC {
+    [etl_ugs]
+    [api_ugs]
+    queue "<$kafka>" as Kafka #White
+    database Clickhouse #White
+}
+package RabbitMQ{
+  [Exchange_notify]
+  [Exchange_websocket]
+}
+package Worker{
+  [for_websocket]
+  [for_email]
+  [for_notify]
+  database logger
+  [sheduler] 
+  database redis_sheduler
+}
+package WebSocket{
+
+}
+
+[Админ] --> [FastUI]: 1.Создание шаблона для сообщения и правил
+[FastUI] -> [templete_mongo] : Сохранияет шаблон 
+[FastUI] --> [API] : 2.{тип шаблона, когда и кому}
+[API] --> [Exchange_notify] : 3.{тип шаблона, когда и кому}
+[api_ugs] --> [API] : 2.{тип шаблона, когда и кому}
+[Exchange_notify] ---> [Worker] : 4.{тип шаблона, когда и кому}
+[for_notify]->[logger] : 7.логирует сообщение
+[for_email]->[logger] : 7.логирует сообщение
+[for_websocket]->[logger] : 7.логирует сообщение
+[for_websocket]-->[Exchange_websocket] : 9.{текст и кому}
+[WebSocket]-->[Exchange_websocket] : 10.забирает сообщение
+[WebSocket]--> Клиент: 11.отпавляет сообщение
+[for_email]-->[auth_postgres] : 5.Забирает информацию о клиенте
+[for_email]-->[templete_mongo] : 6.Забирает информацию о шаблоне сообщения
+[sheduler]-->[redis_sheduler] : 12. проверяет каждую минуту наступило ли событие для отправки уведобления
+[sheduler]-->[for_email] : 13.уведомляет что надо сейчас отправить сообщение
+
+skinparam PackageBackgroundColor Azure
+@enduml
