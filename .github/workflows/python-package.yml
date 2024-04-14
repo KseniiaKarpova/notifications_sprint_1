@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wemake-python-styleguide mypy
+    - name: Lint with wemake-python-styleguide
+      run: wemake-python-styleguide .
+    - name: Type check with mypy
+      run: mypy .
+    - name: Generate HTML report
+      run: |
+        wemake-python-styleguide . --output-file=lint_report.html
+        mypy . --html-report=mypy_report.html
+    - name: Notify Telegram
+      if: ${{ failure() || success() }}
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        commit_hash=$(git rev-parse --short HEAD)
+        if [ ${{ job.status }} == 'success' ]; then
+          message="[My Project]: Pipeline for $commit_hash finished successfully!"
+        else
+          message="[My Project]: Pipeline for $commit_hash finished with error!"
+          for step in $(echo ${{ join(join(steps.*.outcome, ','), ',') }} | tr ',' '\n'); do
+            if [ $step != 'success' ]; then
+              message="$message\n$step failed"
+            fi
+          done
+        fi
+        curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -d chat_id="$TELEGRAM_CHAT_ID" -d text="$message"
