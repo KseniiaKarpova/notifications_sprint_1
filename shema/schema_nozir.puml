@@ -1,0 +1,112 @@
+@startuml
+!include <logos/django>
+!include <logos/postgresql>
+!include <logos/redis>
+!include <logos/kafka>
+!include <logos/rabbitmq>
+!include <logos/mongodb>
+
+title Архитектура Проекта (Сервис нотификации)
+
+actor "Client"
+actor "Admin"
+
+
+package AuthAPI {
+    [auth_api] 
+    database "<$postgresql>" as auth_postgres #White
+    database "<$redis>" as auth_redis #White
+}
+
+rectangle WebSocket{
+
+}
+
+package UGCService {
+    [etl_ugs]
+    [api_ugs]
+    queue "<$kafka>" as Kafka #White
+    database Clickhouse #White
+}
+
+package NotificationService {
+    frame AdminPanel{
+        [FastUI]
+    }
+    frame MessageDB{
+        database "<$postgresql>" as db #White
+    }
+    package API {
+        [endpoint_publisher1]
+        [endpoint_publisher2]
+        [endpoint_publisher3]
+        [endpoint_admin_publisher]
+        [endpoint_publisher...]
+    }
+
+    card Subscribers{
+        action handler1
+        action handler2
+        action handler3
+        action handler4
+        action handler...
+    }
+
+    frame Celery {
+        process Cron
+        }
+
+    queue "<$rabbitmq>" as rabbit #White
+
+    frame Logger {
+        database "<$mongodb>" as Primary #White
+    }
+}
+
+
+[Admin] ..> [AdminPanel]: 1.Создание шаблона для сообщения и правил
+[FastUI] ...> [db]: 2.Сохранение шаблона в БД для сообщения и правил
+[FastUI] ..> [rabbit]: 3.Ставим в очередь рассылку клиентам
+
+[UGCService] ..> [NotificationService]: 4.Уведомление об лайк, коммент итд
+[AuthAPI] ..> [NotificationService]: 5.Уведомление об регистрации, секретные ключи для регистрации и тд
+
+[endpoint_publisher1] --> [rabbit]
+[endpoint_publisher2] --> [rabbit]
+[endpoint_publisher3] --> [rabbit]
+[endpoint_publisher...] --> [rabbit]
+[endpoint_admin_publisher] --> [rabbit]
+[API] ..> [rabbit]: Ставим в очередь
+
+[rabbit] --> [handler1]
+[rabbit] --> [handler2]
+[rabbit] --> [handler3]
+[rabbit] --> [handler...]
+[rabbit] ..> [Subscribers]: Отправляем из очереди в консумер
+
+[handler1] --> [db]
+[handler2] --> [db]
+[handler3] --> [db]
+[handler...] --> [db]
+
+[Subscribers]..>[Celery]: запуск воркеров
+
+[Subscribers]..> [AuthAPI]: Консумеры забирают данные юзера
+[Cron] --> [db]
+
+[handler1] --> [Primary]
+[handler2] --> [Primary]
+[handler3] --> [Primary]
+[handler...] ..> [Primary]: Сохраняем сообщение
+
+[handler4] --> [WebSocket]: Hook webscoket
+
+[Logger] --> [WebSocket]: Публикуем новые поступившие данные
+[Client] <---> [WebSocket]: Ждет нотификацию
+
+skinparam PackageBackgroundColor Azure
+skinparam node {
+    BackgroundColor Black
+    BorderColor Black
+}
+@enduml
