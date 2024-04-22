@@ -36,9 +36,9 @@ RUN pip install --user --upgrade pip && \
 
 COPY ./pyproject.toml pyproject.toml
 
-RUN poetry install --no-root --with test
+RUN poetry install --no-root
 
 # Копирования кода приложения
 COPY ./ $APP_DIR
 
-COPY /entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
