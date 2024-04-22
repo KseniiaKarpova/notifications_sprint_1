@@ -37,13 +37,13 @@ jobs:
 
     - name: Mypy
       run: |
-          mypy --html-report reports/mypy/ . || true
+        mypy --html-report reports/mypy/ . || true
 
     - name: Reports
       uses: actions/upload-artifact@v3
       with:
-          name: code-verify-reports
-          path: reports/
+        name: code-verify-reports
+        path: reports/
 
     - name: Notify Telegram
       if: ${{ failure() || success() }}
