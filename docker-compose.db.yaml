@@ -1,0 +1,76 @@
+version: '3.9'
+
+services:
+
+  notification_mongodb:
+    image: mongo:5.0.21
+    hostname: notification_mongodb
+    container_name: notification_mongdb
+    env_file:
+      - .env
+    environment:
+      - MONGO_INITDB_DATABASE=${NOTIFICATIONS_MONGO_DB_NAME}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - application_network
+    mem_limit: 512m
+    mem_reservation: 128M
+    cpus: 1
+
+  auth_postgres:
+    image: postgres:15.5-alpine3.19
+    container_name: auth_postgres
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${AUTH_POSTGRES_PASSWORD}
+      - POSTGRES_USER=${AUTH_POSTGRES_USER}
+      - POSTGRES_DB=${AUTH_POSTGRES_DB}
+      - POSTGRES_PORT=${AUTH_POSTGRES_PORT}
+    volumes:
+      - auth_pg_data:/var/lib/postgresql/data
+    networks:
+      - application_network
+    mem_limit: 512m
+    mem_reservation: 128M
+    cpus: 1
+
+  redis:
+    image: redis:7.2.3-alpine3.18
+    container_name: redis
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - redis_data:/data
+    networks:
+      - application_network
+
+  worker_rabbit:
+    env_file:
+      - .env
+    image: rabbitmq:3-management
+    container_name: worker_rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status", "--quiet"]
+      interval: 5s
+      retries: 2
+    networks:
+      - application_network
+
+networks:
+  application_network:
+
+volumes:
+  auth_pg_data:
+  redis_data:
+  rabbit_data:
