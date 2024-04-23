@@ -6,21 +6,22 @@ from schemas import LikeDislike
 
 router = RabbitRouter(settings.rabbit_dsn)
 
+
 def broker():
     return router.broker
 
 
 @router.subscriber("mark_review")
-async def save_message(content: LikeDislike, logger: Logger):
+async def message(content: LikeDislike, logger: Logger):
     return {"response": "Hello, Rabbit!"}
 
 
 @router.subscriber("registration")
-async def save_message(content: LikeDislike, logger: Logger):
+async def registration(content: LikeDislike, logger: Logger):
     return {"response": "Hello, Rabbit!"}
 
 
 @router.post("")
-async def message(
+async def notify(
         broker: RabbitBroker = Depends(broker)):
     return await broker.publish(queue="liked", message="sdadasdsd")
