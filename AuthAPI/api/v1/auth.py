@@ -1,13 +1,12 @@
-from core.handlers import (AuthHandler, JwtHandler, get_auth_handler,
-                           require_access_token, require_refresh_token)
+from core.handlers import AuthHandler, JwtHandler, get_auth_handler, require_refresh_token
 from db.redis import get_redis
 from fastapi import APIRouter, Body, Depends, Header
 from redis.asyncio import Redis
 from schemas.auth import (AuthSettingsSchema, LoginResponseSchema,
-                          UserCredentials, UserLogin, UserUpdate)
+                          UserCredentials, UserLogin)
 from services.auth import AuthService, get_auth_service
 
-router = APIRouter()
+router = APIRouter(prefix="/auth")
 
 
 @router.post("/login", response_model=LoginResponseSchema)
@@ -46,13 +45,3 @@ async def registration(
         user_credentials: UserCredentials,
         service: AuthService = Depends(get_auth_service)):
     return await service.registrate(data=user_credentials)
-
-
-@router.patch("/user")
-async def update_user(
-        user_data: UserUpdate = Body(),
-        jwt_handler: JwtHandler = Depends(require_access_token),
-        service: AuthService = Depends(get_auth_service),
-        ):
-    current_user = await jwt_handler.get_current_user()
-    return await service.update_user(data=user_data, user_id=current_user.uuid)

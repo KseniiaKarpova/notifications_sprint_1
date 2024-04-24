@@ -81,3 +81,10 @@ class SocialData(BaseModel):
     social_user_id: str
     type: str
     data: dict
+
+
+class UserData(BaseModel):
+    uuid: UUID
+    email: str
+    name: str | None
+    surname: str | None

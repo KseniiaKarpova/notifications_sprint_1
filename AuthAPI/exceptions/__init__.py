@@ -37,3 +37,7 @@ order_by_field_not_found = HTTPException(
 integrity_error = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
     detail="record already exists")
+
+not_found = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="Not found")

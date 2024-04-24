@@ -5,6 +5,8 @@ from schemas.auth import SocialData
 from core.hasher import DataHasher
 from storages.social_account import SocialAccountStorage
 from db.postgres import commit_async_session
+from sqlalchemy.orm import Query
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 
 class UserStorage(AlchemyBaseStorage):
@@ -30,15 +32,12 @@ class UserStorage(AlchemyBaseStorage):
         social_acc_storage = SocialAccountStorage(
                 session=self.session,
                 commit_mode=False)
-        async with self.session:
-            user: User = await self.create(params={
+        user: User = await self.create(params={
                 'email': social_data.user.email,
                 'login': social_data.user.email,
                 'password': await DataHasher().random_password()
             })
-
-            self.session.add(user)
-            social_account = await social_acc_storage.create(
+        social_account = await social_acc_storage.create(
                 {
                     'type': social_data.type,
                     'social_user_id': social_data.social_user_id,
@@ -46,7 +45,14 @@ class UserStorage(AlchemyBaseStorage):
                     'user_id': user.uuid
                     },
                     )
+        async with self.session:
+            self.session.add(user)
             self.session.add(social_account)
             await self.session.flush()
-            await commit_async_session(self.session)
+        await commit_async_session(self.session)
         return user, social_account
+
+    async def get_all_users(self):
+        query: Query = select(User)
+        query.order_by(User.created_at)
+        return await paginate(self.session, query)

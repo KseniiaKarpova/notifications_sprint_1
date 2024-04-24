@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from schemas.user_history import UserHistory
 from services.user_history import UserHistoryService, get_user_history_service
 
-router = APIRouter()
+router = APIRouter(prefix="/user_history")
 
 
 @router.get("", response_model=list[UserHistory])

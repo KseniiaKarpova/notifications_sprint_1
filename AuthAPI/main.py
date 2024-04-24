@@ -1,29 +1,35 @@
 import logging
-from contextlib import asynccontextmanager
-
 import uvicorn
-from api.v1 import auth as auth_api
-from api.v1 import role, user_history, socials
-from async_fastapi_jwt_auth.exceptions import AuthJWTException
-from core import config, logger, oauth2
-from db import postgres, redis
+
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse, ORJSONResponse
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from redis.asyncio import Redis
+from fastapi_pagination import add_pagination
+
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+
 from utils.constraint import RequestLimit
 from utils.jaeger import configure_tracer
+
+from core import config, logger, oauth2
+from api import setup_routers
+from db import postgres, redis
+
+from contextlib import asynccontextmanager
+
+from async_fastapi_jwt_auth.exceptions import AuthJWTException
 from authlib.integrations.httpx_client import AsyncOAuth2Client
+
 from middleware.main import setup_middleware
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from redis.asyncio import Redis  # type: ignore
 
 
 settings = config.APPSettings()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI):
     if settings.jaeger.enable:
         configure_tracer(
             host=settings.jaeger.host,
@@ -61,23 +67,8 @@ def create_app() -> FastAPI:
         lifespan=lifespan
     )
     setup_middleware(app)
-    app.include_router(
-        router=auth_api.router,
-        prefix="/api/v1/auth",
-        tags=["auth"])
-    app.include_router(
-        router=role.router,
-        prefix="/api/v1/role",
-        tags=["role"])
-    app.include_router(
-        router=user_history.router,
-        prefix="/api/v1/user_history",
-        tags=["role"])
-
-    app.include_router(
-        router=socials.router,
-        prefix="/api/v1/socials",
-        tags=["social_auth"])
+    setup_routers(app)
+    add_pagination(app)
     return app
 
 

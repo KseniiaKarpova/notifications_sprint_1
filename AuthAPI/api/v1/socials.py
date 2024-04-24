@@ -5,7 +5,7 @@ from core.config import settings
 from schemas.auth import SocialData, UserAuthData
 from models.models import SocialNetworksEnum
 
-router = APIRouter()
+router = APIRouter(prefix="/socials")
 
 
 @router.get('/')

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, status
 from models.models import Role
 from services.crud import CrudService, get_crud_service
 
-router = APIRouter()
+router = APIRouter(prefix="/role")
 
 
 @router.post(

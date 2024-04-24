@@ -35,7 +35,6 @@ RUN pip install --user --upgrade pip && \
     pip install --user --no-cache-dir poetry
 
 COPY ./pyproject.toml pyproject.toml
-
 RUN poetry install --no-root --with test
 
 # Копирования кода приложения

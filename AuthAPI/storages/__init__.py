@@ -5,16 +5,17 @@ from exceptions import integrity_error, order_by_field_not_found
 from models.models import Base
 from sqlalchemy import and_, asc, desc, select, update
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy.orm import Query
 from utils.jaeger import tracer
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 
 class AlchemyBaseStorage(ABC):
     table: Base = None
 
     def __init__(
-            self, session: AsyncSession = None,
+            self, session: Session = None,
             limit: int = 10, offset: int = 1,
             order_by: list[str] = ['-created_at'],
             commit_mode: bool = True) -> None:
@@ -51,9 +52,8 @@ class AlchemyBaseStorage(ABC):
 
         setattr(self, 'query', query.order_by(*order_by))
 
-    async def paginate(self):
-        query: Query = getattr(self, 'query', None)
-        setattr(self, 'query', query.limit(self.limit).offset(self.offset))
+    async def paginate(self, query: Query):
+        return await paginate(self.session, query)
 
     async def select_actives(self, conditions: dict):
         conditions.update({
@@ -95,8 +95,7 @@ class AlchemyBaseStorage(ABC):
         setattr(self, 'query', await self.generate_query(attributes=attributes, conditions=conditions))
         await self.order()
         query: Query = getattr(self, 'query', None)
-        instance = (await self.execute(query)).scalars().all()
-        return instance
+        return await self.paginate(query=query)
 
     async def create(self, params: dict) -> table:
         """
@@ -129,7 +128,7 @@ class AlchemyBaseStorage(ABC):
         instance = await self.execute_and_commit(query=query)
         return instance
 
-    async def execute(self, query: Query):
+    async def execute(self, query: Query) -> Session:
         async with self.session:
             try:
                 with tracer.start_as_current_span('storage-request'):
