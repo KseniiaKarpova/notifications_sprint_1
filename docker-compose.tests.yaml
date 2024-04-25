@@ -1,0 +1,143 @@
+version: '3'
+
+x-mongo-common:
+  &mongo-common
+  image: mongo:5.0.21
+  networks:
+    - test_application_network
+  healthcheck:
+    test: echo 'db.runCommand("ping").ok' | mongo $(hostname)/test --quiet
+    interval: 10s
+    timeout: 5s
+    retries: 3
+    start_period: 10s
+
+services:
+  test_postgres_db:
+    image: postgres:15.5-alpine3.19
+    container_name: test_postgres_db
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${TEST_POSTGRES_PASSWORD}
+      - POSTGRES_USER=${TEST_POSTGRES_USER}
+      - POSTGRES_DB=${TEST_POSTGRES_DB}
+    volumes:
+      - test_pg_data:/var/lib/postgresql/data
+    networks:
+      - test_application_network
+
+  test_redis:
+    image: redis:7.2.3-alpine3.18
+    container_name: test_redis
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - test_redis_data:/data
+    networks:
+      - test_application_network
+
+  test_auth_api:
+    container_name: test_AuthAPI
+    command: poetry run uvicorn main:app --host 0.0.0.0 --port 9999 --reload
+    env_file:
+      - .env
+    environment:
+      AUTH_POSTGRES_HOST: ${TEST_POSTGRES_HOST}
+      AUTH_POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
+      AUTH_POSTGRES_USER: ${TEST_POSTGRES_USER}
+      AUTH_POSTGRES_DB: ${TEST_POSTGRES_DB}
+      AUTH_POSTGRES_PORT: ${TEST_POSTGRES_PORT}
+      REDIS_HOST: ${TEST_REDIS_HOST}
+      REDIS_PORT: ${TEST_REDIS_PORT}
+    volumes:
+      - ./AuthAPI:/opt/app
+    build:
+      context: AuthAPI
+      dockerfile: dockerfile
+    depends_on:
+      test_postgres_db:
+        condition: service_started
+      test_redis:
+        condition: service_started
+    ports:
+      - "9999:9999"
+    networks:
+      - test_application_network
+
+  test_reviews_api:
+    container_name: test_reviews_api
+    restart: unless-stopped
+    build:
+      context: ./ReviewsAPI
+      dockerfile: Dockerfile
+    networks:
+      - test_application_network
+    env_file:
+      - .env
+    environment:
+      REDIS_HOST: ${TEST_REDIS_HOST}
+      REDIS_PORT: ${TEST_REDIS_PORT}
+      MONGODB_URI: ${TEST_MONGODB_URI}
+      MONGODB_DB_NAME: ${TEST_MONGODB_DB_NAME}
+    volumes:
+      - ./ReviewsAPI:/opt/app
+      - logs:/opt/logs
+    command: poetry run uvicorn main:app --host 0.0.0.0 --port 3000 --reload
+    ports:
+      - "3000:3000"
+    depends_on:
+      test_mongos:
+        condition: service_healthy
+    mem_limit: 512m
+    mem_reservation: 128M
+    cpus: 0.5
+
+  test_mongos:
+    <<: *mongo-common
+    hostname: test_mongos
+    container_name: test_mongos
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env
+    environment:
+      - MONGO_INITDB_DATABASE=${TEST_MONGODB_DB_NAME}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - test_application_network
+
+  tests:
+    container_name: tests
+    build:
+      context: Tests
+      dockerfile: dockerfile
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: /tests
+      AUTH_POSTGRES_HOST: ${TEST_POSTGRES_HOST}
+      AUTH_POSTGRES_PORT: ${TEST_POSTGRES_PORT}
+      MONGODB_URI: ${TEST_MONGODB_URI}
+    command: pytest functional/src/
+    volumes:
+      - ./Tests:/tests
+    depends_on:
+      test_mongos:
+        condition: service_healthy
+      test_auth_api:
+        condition: service_started
+      test_reviews_api:
+        condition: service_started
+    networks:
+      - test_application_network
+
+volumes:
+  test_pg_data:
+  test_redis_data:
+  logs:
+
+networks:
+  test_application_network:
