@@ -24,11 +24,13 @@ services:
 #______________Auth_______________
   auth_api:
     container_name: AuthAPI
-    command: poetry run uvicorn main:app --host 0.0.0.0 --port 9999 --reload
+    command: gunicorn main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:9999 --reload & alembic upgrade head
     env_file:
       - .env
+    environment:
+      PYTHONPATH: /src
     volumes:
-      - ./AuthAPI:/opt/app
+      - ./AuthAPI:/src
     build:
       context: AuthAPI
       dockerfile: Dockerfile
@@ -59,6 +61,7 @@ services:
     ports:
       - "8001:8001"
       - "8008:8008"
+      - "8009:8009"
       - "3000:3000"
     networks:
       - application_network
@@ -97,6 +100,15 @@ services:
     depends_on:
       worker_rabbit:
         condition: service_healthy
+
+  ws:
+    container_name: ws
+    command: gunicorn main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:9992 --reload
+    build:
+      context: WebSocket
+      dockerfile: Dockerfile
+    networks:
+      - application_network
 
 networks:
   application_network:

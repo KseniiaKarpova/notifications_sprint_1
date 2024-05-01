@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import QueuePool
 from storages.user import UserStorage
 
+
 settings = config.APPSettings()
 logging.getLogger('asyncio').setLevel(logging.WARNING)
 
@@ -29,7 +30,7 @@ def create(login: str, password: str):
                 class_=AsyncSession)
 
             hashed_password = await DataHasher().generate_word_hash(secret_word=password)
-            storage = UserStorage()
+            storage = UserStorage(session=postgres.create_async_session())
             await storage.create(params={
                 'password': hashed_password,
                 'login': login,
