@@ -4,10 +4,11 @@ import logging
 import typer
 from core import config
 from core.hasher import DataHasher
+from models.models import User
 from db import postgres
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy import create_engine, String, Column
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import QueuePool
 from storages.user import UserStorage
 
 
@@ -18,25 +19,16 @@ logging.getLogger('asyncio').setLevel(logging.WARNING)
 def create(login: str, password: str):
     try:
         async def save():
-            postgres.async_engine = create_async_engine(
-                settings.db_dsn,
-                poolclass=QueuePool,
-                pool_pre_ping=True, pool_size=20, pool_timeout=30)
-
-            postgres.async_session_factory = sessionmaker(
-                postgres.async_engine,
-                expire_on_commit=False,
-                autoflush=True,
-                class_=AsyncSession)
-
+            engine = create_engine(settings.db_dsn)
             hashed_password = await DataHasher().generate_word_hash(secret_word=password)
-            storage = UserStorage(session=postgres.create_async_session())
-            await storage.create(params={
-                'password': hashed_password,
-                'login': login,
-                'is_superuser': True,
-            })
-            await postgres.async_engine.dispose()
+            factory = sessionmaker(bind=engine)
+            session = factory()
+            new_rec = User(password=hashed_password,
+                           login=login,
+                           email='',
+                           is_superuser=True)
+            session.add(new_rec)
+            session.commit()
 
         asyncio.run(save())
 

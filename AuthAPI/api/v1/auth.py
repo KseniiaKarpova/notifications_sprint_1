@@ -45,3 +45,10 @@ async def registration(
         user_credentials: UserCredentials,
         service: AuthService = Depends(get_auth_service)):
     return await service.registrate(data=user_credentials)
+
+
+@router.post("/registration/admin")
+async def registration(
+        user_credentials: UserCredentials,
+        service: AuthService = Depends(get_auth_service)):
+    return await service.registrate_super_user(data=user_credentials)

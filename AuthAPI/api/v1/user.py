@@ -15,8 +15,20 @@ async def get_user(
         jwt_handler: JwtHandler = Depends(require_access_token),
         service: UserService = Depends(get_user_service),
         ):
+    current_user = await jwt_handler.get_current_user()
     await jwt_handler.is_super_user()
+    return current_user
     return await service.get_user(uuid=user_id)
+
+
+@router.get("/token", response_model=UserData)
+async def get_user_by_token(
+        jwt_handler: JwtHandler = Depends(require_access_token),
+        service: UserService = Depends(get_user_service),
+        ):
+    current_user = await jwt_handler.get_current_user()
+    await jwt_handler.is_super_user()
+    return await service.get_user(uuid=current_user.user_id)
 
 
 @router.get("", response_model=Page[UserData])
