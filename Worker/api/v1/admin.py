@@ -1,9 +1,7 @@
-from __future__ import annotations as _annotations
 from fastapi import Depends
 from fastui.events import AuthEvent
-from Worker.admin_panel.auth_user import User
+from admin_panel.auth_user import User
 from admin_panel.page import demo_page
-from __future__ import annotations as _annotations
 from typing import Annotated
 from fastapi import APIRouter
 from fastui import AnyComponent, FastUI

@@ -107,6 +107,8 @@ services:
     build:
       context: WebSocket
       dockerfile: Dockerfile
+    volumes:
+      - ./WebSocket/src:/src
     networks:
       - application_network
 
