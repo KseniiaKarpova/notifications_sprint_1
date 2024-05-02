@@ -22,6 +22,16 @@ class AuthService(BaseService):
         })
         return user_created
 
+    async def registrate_super_user(self, data: UserCredentials):
+        hashed_password = await DataHasher().generate_word_hash(secret_word=data.password)
+        await self.storage.create(params={
+            'password': hashed_password,
+            'login': data.login,
+            'email': data.email,
+            'is_superuser': True
+        })
+        return user_created
+
     async def is_super_user(self, login):
         status = await self.storage.exists(conditions={
             'login': login,
