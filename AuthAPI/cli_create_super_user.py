@@ -4,39 +4,44 @@ import logging
 import typer
 from core import config
 from core.hasher import DataHasher
-from models.models import User
 from db import postgres
-from sqlalchemy import create_engine, String, Column
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import QueuePool
 from sqlalchemy.orm import sessionmaker
 from storages.user import UserStorage
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 
 settings = config.APPSettings()
 logging.getLogger('asyncio').setLevel(logging.WARNING)
 
 
-def create(login: str, password: str):
-    try:
-        async def save():
-            engine = create_engine(settings.db_dsn)
-            hashed_password = await DataHasher().generate_word_hash(secret_word=password)
-            factory = sessionmaker(bind=engine)
-            session = factory()
-            new_rec = User(password=hashed_password,
-                           login=login,
-                           email='',
-                           is_superuser=True)
-            session.add(new_rec)
-            session.commit()
+def create(login: str, password: str, email: str):
+    async def save():
+        postgres.async_engine = create_async_engine(
+            settings.db_dsn,
+            poolclass=QueuePool,
+            pool_pre_ping=True, pool_size=20, pool_timeout=30)
 
-        asyncio.run(save())
+        postgres.async_session_factory = sessionmaker(
+            postgres.async_engine,
+            expire_on_commit=False,
+            autoflush=True,
+            class_=AsyncSession)
 
-        print(f"Creating Super User: {login}")
-
-    except Exception as e:
-        print('Can`t create Super User')
-        print(e)
+        hashed_password = await DataHasher().generate_word_hash(secret_word=password)
+        async with postgres.async_session_factory() as session:
+            storage = UserStorage(commit_mode=False)
+            instance = await storage.create(params={
+                'password': hashed_password,
+                'login': login,
+                'is_superuser': True,
+                'email': email,  
+            })
+            session.add(instance)
+            await session.commit()
+        await postgres.async_engine.dispose()
+    asyncio.run(save())
+    print(f"Creating Super User: {login}")
 
 
 if __name__ == "__main__":
