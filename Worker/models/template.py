@@ -36,7 +36,7 @@ class TemplateModel(BaseMixin, Document):
     type: list[TypeMessage] | None = Field(None)  #тип канала куда отправить сообщение
     redirectUrl: str | None = Field(None) #ссылка которую подствляют вместо {redirectUrl}
     expirationTimestamp: int | None = Field(None) #redirectUrl нужно переделть в короткую,это описано в теории
-    date: date | None = Field(None) # дата для одноразовых рассылок
+    date_send: date | None = Field(None) # дата для одноразовых рассылок
     schedule: str | None = Field(None) # cron
 
     class Settings:
@@ -51,7 +51,7 @@ class FormModel(BaseModel):
     type: list[TypeMessage] | None = Field(None, title='В какой канал отправить?')
     redirectUrl : str | None = Field(None, description='Ссылка куда перейти')
     expirationTimestamp : int | None = Field(None, description="срок действия ссылки (в часах)")
-    date: date | None = Field(None, title='Когда отпавить сообщение?', description='Выбери дату для одноразовой рассылки')
+    date_send: date | None = Field(None, title='Когда отпавить сообщение?', description='Выбери дату для одноразовой рассылки')
     schedule: str | None = Field(
         None, description='cron format = (* * * * *)'
     )
