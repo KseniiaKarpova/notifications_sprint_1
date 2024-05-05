@@ -30,14 +30,14 @@ class LoginForm(BaseModel):
 
 class TemplateModel(BaseMixin, Document):
     template_id: UUID
-    name: str | None = Field(None)
-    template: str | None = Field(None)
-    event: list[EventMessage] | None = Field(None)
-    type: list[TypeMessage] | None = Field(None)
-    redirectUrl: str | None = Field(None)
-    expirationTimestamp: int | None = Field(None)
-    data: date | None = Field(None)
-    schedule: str | None = Field(None)
+    name: str | None = Field(None) #Название шаблона
+    template: str | None = Field(None) #шаблон сообщения. Используйтся {user} в шаблоне для отображения имени клиента и {redirectUrl} для ссылки
+    event: list[EventMessage] | None = Field(None)  #типы событий по которому надо отправить сообщение
+    type: list[TypeMessage] | None = Field(None)  #тип канала куда отправить сообщение
+    redirectUrl: str | None = Field(None) #ссылка которую подствляют вместо {redirectUrl}
+    expirationTimestamp: int | None = Field(None) #redirectUrl нужно переделть в короткую,это описано в теории
+    date: date | None = Field(None) # дата для одноразовых рассылок
+    schedule: str | None = Field(None) # cron
 
     class Settings:
         name = "template"
@@ -51,7 +51,7 @@ class FormModel(BaseModel):
     type: list[TypeMessage] | None = Field(None, title='В какой канал отправить?')
     redirectUrl : str | None = Field(None, description='Ссылка куда перейти')
     expirationTimestamp : int | None = Field(None, description="срок действия ссылки (в часах)")
-    data: date | None = Field(None, title='Когда отпавить сообщение?', description='Выбери дату для одноразовой рассылки')
+    date: date | None = Field(None, title='Когда отпавить сообщение?', description='Выбери дату для одноразовой рассылки')
     schedule: str | None = Field(
         None, description='cron format = (* * * * *)'
     )
