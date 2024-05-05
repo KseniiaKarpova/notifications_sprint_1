@@ -16,3 +16,11 @@ forbidden_error = HTTPException(
 token_expired = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail="Token expired")
+
+already_exists = HTTPException(
+    status_code=status.HTTP_409_CONFLICT,
+    detail="Data already exists")
+
+deleted = HTTPException(
+    status_code=status.HTTP_200_OK,
+    detail="the record deleted")

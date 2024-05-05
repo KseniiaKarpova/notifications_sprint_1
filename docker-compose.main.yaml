@@ -92,6 +92,8 @@ services:
       - .env
     volumes:
       - ./Worker:/opt/app
+    ports:
+      - "9998:9998"
     networks:
       - application_network
     mem_limit: 512m

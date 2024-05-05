@@ -8,10 +8,10 @@ from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.events import GoToEvent, PageEvent
 from fastui.forms import Textarea, fastui_form
-from models.messages import FormModel, LoginForm
+from models.template import FormModel, LoginForm
 
 
-router = APIRouter(tags=['Admin Panel'])
+router = APIRouter()
 
 
 @router.post('/login', response_model=FastUI, response_model_exclude_none=True)

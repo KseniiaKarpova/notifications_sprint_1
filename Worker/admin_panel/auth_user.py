@@ -25,7 +25,7 @@ class User:
     def from_request(cls, authorization: Annotated[str, Header()] = '') -> Self:
         user = cls.from_request_opt(authorization)
         if user is None:
-            raise AuthRedirect('/auth/login/password')
+            raise AuthRedirect('/login/password')
         else:
             return user
 

@@ -9,13 +9,6 @@ def demo_page(*components: AnyComponent, title: str | None = None) -> list[AnyCo
         c.Navbar(
             title='Admin Panel',
             title_event=GoToEvent(url='/'),
-            start_links=[
-                c.Link(
-                    components=[c.Text(text='Auth')],
-                    on_click=GoToEvent(url='/auth/login/password'),
-                    active='startswith:/auth',
-                ),
-            ],
         ),
         c.Page(
             components=[
