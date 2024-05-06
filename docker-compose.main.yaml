@@ -24,11 +24,13 @@ services:
 #______________Auth_______________
   auth_api:
     container_name: AuthAPI
-    command: poetry run uvicorn main:app --host 0.0.0.0 --port 9999 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 9999 --reload
     env_file:
       - .env
+    environment:
+      PYTHONPATH: /src
     volumes:
-      - ./AuthAPI:/opt/app
+      - ./AuthAPI:/src
     build:
       context: AuthAPI
       dockerfile: Dockerfile
@@ -49,6 +51,7 @@ services:
       - ./Nginx/auth_api.conf:/etc/nginx/conf.d/auth_api.conf:ro
       - ./Nginx/worker_api.conf:/etc/nginx/conf.d/worker_api.conf:ro
       - ./Nginx/reviews_api.conf:/etc/nginx/conf.d/reviews_api.conf:ro
+      - ./Nginx/websocket.conf:/etc/nginx/conf.d/websocket.conf:ro
     depends_on:
       auth_api:
         condition: service_started
@@ -58,7 +61,9 @@ services:
         condition: service_started
     ports:
       - "8001:8001"
+      - "8007:8007"
       - "8008:8008"
+      - "8009:8009"
       - "3000:3000"
     networks:
       - application_network
@@ -89,6 +94,8 @@ services:
       - .env
     volumes:
       - ./Worker:/opt/app
+    ports:
+      - "9998:9998"
     networks:
       - application_network
     mem_limit: 512m
@@ -97,6 +104,17 @@ services:
     depends_on:
       worker_rabbit:
         condition: service_healthy
+
+  ws:
+    container_name: ws
+    command: uvicorn main:app --host 0.0.0.0 --port 9992 --reload
+    build:
+      context: WebSocket
+      dockerfile: Dockerfile
+    volumes:
+      - ./WebSocket/src:/src
+    networks:
+      - application_network
 
 networks:
   application_network:

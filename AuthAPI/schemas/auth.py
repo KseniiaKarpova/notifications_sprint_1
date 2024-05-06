@@ -60,7 +60,7 @@ class LoginResponseSchema(BaseModel):
 class JWTUserData(BaseModel):
     login: str
     uuid: UUID
-    roles: list[str] | None = Field(None)
+    roles: list[str] | list[None] = Field(None)
     surname: str | None = Field(None)
     name: str | None = Field(None)
 
