@@ -1,7 +1,18 @@
 from pydantic import Field, BaseModel
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
+import enum
 
+
+class TypeMessage(str, enum.Enum):
+    email = 'email'
+    notify = 'notify'
+
+class EventMessage(str, enum.Enum):
+    like = 'like'
+    dislike = 'dislike'
+    registration = 'registration'
+    info = 'info' #рассылка сообщений
 
 class BaseMixin(BaseModel):
     id: UUID = Field(default_factory=uuid4)
