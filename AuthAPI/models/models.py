@@ -37,6 +37,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=True)
     surname: Mapped[str] = mapped_column(String(255), nullable=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)
+    mail_verified: bool = mapped_column(default=False)
     user_roles: Mapped[list['UserRole']] = relationship(back_populates='user',
                                                         cascade='all, delete',
                                                         passive_deletes=True)

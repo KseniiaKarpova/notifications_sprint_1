@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import ORJSONResponse, JSONResponse
 from contextlib import asynccontextmanager
 from redis.asyncio import Redis
-from api.notifications import router
+from Worker.api.v1.notifications import router
 from async_fastapi_jwt_auth.exceptions import AuthJWTException
 from db import mongo, init_db, redis
 from motor.motor_asyncio import AsyncIOMotorClient

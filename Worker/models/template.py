@@ -15,7 +15,11 @@ class EventMessage(str, enum.Enum):
     like = 'like'
     dislike = 'dislike'
     registration = 'registration'
-    info = 'info' #рассылка сообщений
+
+
+class InfoMessage(str, enum.Enum):
+    film_added = 'film_added'
+    info = 'info'
 
 
 class LoginForm(BaseModel):
@@ -37,7 +41,6 @@ class TemplateModel(BaseMixin, Document):
     redirectUrl: str | None = Field(None) #ссылка которую подствляют вместо {redirectUrl}
     expirationTimestamp: int | None = Field(None) #redirectUrl нужно переделть в короткую,это описано в теории
     date_send: date | None = Field(None) # дата для одноразовых рассылок
-    schedule: str | None = Field(None) # cron
 
     class Settings:
         name = "template"
