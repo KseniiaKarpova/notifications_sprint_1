@@ -4,7 +4,7 @@ out
 */.ipynb_checkpoints/
 .idea/
 logs/
-
+Admin/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

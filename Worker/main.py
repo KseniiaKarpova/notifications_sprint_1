@@ -7,8 +7,8 @@ from async_fastapi_jwt_auth.exceptions import AuthJWTException
 from db import mongo, init_db, redis
 from motor.motor_asyncio import AsyncIOMotorClient
 from core.config import settings
-#from api.v1.admin import router as admin_router
 from api.v1.template import router as template_router
+from api.v1.history import router as history_router
 
 @asynccontextmanager
 async def custom_lifespan_context(_: FastAPI):
@@ -31,7 +31,8 @@ app = FastAPI(
     )
 app.include_router(router, prefix='/api/v1')
 app.include_router(template_router, prefix='/api/v1')
-#app.include_router(admin_router)
+app.include_router(history_router, prefix='/api/v1')
+
 
 
 @app.exception_handler(AuthJWTException)

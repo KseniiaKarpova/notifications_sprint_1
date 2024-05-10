@@ -1,7 +1,8 @@
 from uuid import UUID
 from beanie import Document
 from models import BaseMixin
-
+from datetime import date
+from models import TypeMessage
 
 class Message(BaseMixin, Document):
     sender_id: UUID
@@ -10,4 +11,15 @@ class Message(BaseMixin, Document):
 
     class Settings:
         name = "message"
+        use_state_management = True
+
+
+class LogMessage(BaseMixin, Document):
+    dt: date
+    user: UUID
+    type: TypeMessage
+    text: str
+
+    class Settings:
+        name = "history"
         use_state_management = True
