@@ -119,7 +119,7 @@ services:
     build:
       context: Admin
       dockerfile: Dockerfile
-    command: celery -A main.celery_app worker --beat --scheduler django --loglevel=info
+    command: celery -A scheduler beat --loglevel=info
     volumes:
       - .:/code
     env_file:

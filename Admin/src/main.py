@@ -35,7 +35,7 @@ def send_periodic_email(data: TemplateModel):
 # Эндпоинт для создания периодической задачи
 
 
-@app.post("/periodic-tasks")
+@app.post("/periodic-tasks", status_code=201)
 async def create_periodic_task(task: TemplateModel, request: Request):
     # Проверка шаблона Jinja
     try:
