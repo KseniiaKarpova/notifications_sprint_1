@@ -44,8 +44,13 @@ class RabbitSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix='rabbit_')
 
 
+class CronSettings(BaseSettings):
+    sec: int = 10
+
+
+
 class APPSettings(BaseSettings):
-    project_name: str = 'Payment API'
+    project_name: str = 'Notifications API'
     redis: RedisSettings = RedisSettings()
     rabbit: RabbitSettings = RabbitSettings()
     auth: AuthSettings = AuthSettings()

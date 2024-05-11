@@ -27,5 +27,6 @@ class ConnectionManager:
 
 connects_manager = None
 
+
 async def get_manager():
     return connects_manager

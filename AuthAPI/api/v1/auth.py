@@ -23,7 +23,7 @@ async def login(
 async def refresh(
         jwt_handler: JwtHandler = Depends(require_refresh_token),
         auth: AuthHandler = Depends(get_auth_handler),
-        ):
+):
     return await auth.generate_refresh_token(subject=jwt_handler.subject)
 
 
@@ -48,7 +48,7 @@ async def registration(
 
 
 @router.post("/registration/admin")
-async def registration(
+async def registration_admin(
         user_credentials: UserCredentials,
         service: AuthService = Depends(get_auth_service)):
     return await service.registrate_super_user(data=user_credentials)

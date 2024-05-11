@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from services.connection import get_manager, ConnectionManager
 from uuid import UUID
+from fastapi import HTTPException, status
 
 router = APIRouter(tags=['Send message'])
 
@@ -17,3 +18,6 @@ async def upload_file(
     ws_service: ConnectionManager = Depends(get_manager)
 ):
     await ws_service.send_personal_message(user_id, text)
+    raise HTTPException(
+        status_code=status.HTTP_200_OK,
+        detail="send message")

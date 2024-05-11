@@ -35,7 +35,7 @@ def create(login: str, password: str, email: str):
                 'password': hashed_password,
                 'login': login,
                 'is_superuser': True,
-                'email': email,  
+                'email': email,
             })
             session.add(instance)
             await session.commit()
