@@ -9,6 +9,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from core.config import settings
 from api.v1.template import router as template_router
 from api.v1.history import router as history_router
+from celery import Celery
+from services import periodic_notify
+
 
 @asynccontextmanager
 async def custom_lifespan_context(_: FastAPI):
@@ -29,10 +32,19 @@ app = FastAPI(
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
     )
+
+# Настройка Celery
+app.celery_app = Celery('tasks', broker=f'redis://{settings.redis.host}:{settings.redis.port}')
+app.celery_app.conf.beat_schedule = {
+    'send_periodic_email': {
+        'task': 'tasks.send_periodic_email',
+        'schedul': 10.0
+    }
+}
+
 app.include_router(router, prefix='/api/v1')
 app.include_router(template_router, prefix='/api/v1')
 app.include_router(history_router, prefix='/api/v1')
-
 
 
 @app.exception_handler(AuthJWTException)
@@ -40,3 +52,10 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
         status_code=exc.status_code, content={
             "detail": exc.message})
+
+# Периодическая задача для рассылки сообщений
+@app.celery_app.task
+async def send_periodic_email():
+    # отправлем в сервис нотификации
+    await periodic_notify.send_periodic_notify()
+

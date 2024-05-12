@@ -117,11 +117,9 @@ services:
 
   celery:
     build:
-      context: Admin
-      dockerfile: Dockerfile
+      context: Worker
+      dockerfile: dockerfile
     command: celery -A scheduler beat --loglevel=info
-    volumes:
-      - .:/code
     env_file:
       - .env
     depends_on:
@@ -129,20 +127,6 @@ services:
     networks:
       - application_network
 
-  admin:
-    container_name: admin
-    build:
-      context: Admin
-      dockerfile: Dockerfile
-    command: uvicorn main:app --host 0.0.0.0 --port 9995
-    ports:
-      - "9995:9995"
-    env_file:
-      - .env
-    networks:
-      - application_network
-    depends_on:
-      - redis
 
 networks:
   application_network:

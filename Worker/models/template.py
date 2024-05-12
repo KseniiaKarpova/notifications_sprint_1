@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Annotated
 from fastui.forms import Textarea, fastui_form
 from pydantic import BaseModel, EmailStr, Field, SecretStr, field_validator
@@ -27,7 +27,7 @@ class TemplateModel(BaseMixin, Document):
     type: list[TypeMessage] | None = Field(None, title='В какой канал отправить?')
     redirectUrl : str | None = Field(None, description='Ссылка куда перейти')
     expirationTimestamp : int | None = Field(None, description="срок действия ссылки (в часах)")
-    date_send: date | None = Field(None, title='Когда отпавить сообщение?', description='Выбери дату для одноразовой рассылки')
+    date_send: datetime | None = Field(None, title='Когда отпавить сообщение?', description='Выбери дату для одноразовой рассылки')
     schedule: str | None = Field(
         "* * * * *" , description='Требуется повторить рассылку? Укажи как часто: "ДеньНедели Мес День Час минуты"'
     )

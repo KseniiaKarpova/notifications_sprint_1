@@ -16,7 +16,7 @@ class HistoryStorage(BaseStorage):
             raise already_exists
 
     async def get(self, **kwargs):
-        return await LogMessage.find_many(kwargs)
+        return await LogMessage.find(kwargs).to_list()
 
     async def delete(self, id: UUID):
         await self.document.find({'_id': id}).delete()
