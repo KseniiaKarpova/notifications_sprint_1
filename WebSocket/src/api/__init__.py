@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from services.connection import get_manager, ConnectionManager
 from uuid import UUID
+from core.handlers import require_access_token, JwtHandler
+from services.connection import ConnectionManager
+from schemas import SendMessageSchema
+
 
 router = APIRouter(tags=['Send message'])
 
@@ -11,9 +15,10 @@ router = APIRouter(tags=['Send message'])
     description="",
     status_code=200
 )
-async def upload_file(
-    user_id: UUID,
-    text: str,
-    ws_service: ConnectionManager = Depends(get_manager)
+async def send_message(
+    data: SendMessageSchema = Body(),
+    ws_service: ConnectionManager = Depends(get_manager),
+    jwt_handler: JwtHandler = Depends(require_access_token),
 ):
-    await ws_service.send_personal_message(user_id, text)
+    await jwt_handler.get_current_user()
+    await ws_service.send_personal_message(data.user_id, data.text)

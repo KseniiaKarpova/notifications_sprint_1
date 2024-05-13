@@ -106,25 +106,15 @@ services:
   ws:
     container_name: ws
     command: uvicorn main:app --host 0.0.0.0 --port 9992 --reload
+    ports:
+      - '9992:9992'
+    env_file:
+      - .env
     build:
       context: WebSocket
       dockerfile: Dockerfile
     volumes:
       - ./WebSocket/src:/src
-    networks:
-      - application_network
-
-
-  admin:
-    container_name: admin
-    command: gunicorn __init__:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:9995 --reload
-    build:
-      context: Admin
-      dockerfile: Dockerfile
-    ports:
-      - "9995:9995"
-    volumes:
-      - ./Admin/src:/src
     networks:
       - application_network
 

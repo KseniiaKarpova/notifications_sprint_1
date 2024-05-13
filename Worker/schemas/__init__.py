@@ -25,3 +25,8 @@ class EventSchema(BaseModel):
 
 class InfoSchema(BaseModel):
     film_id: UUID | None = Field(None, description="the film's id")
+
+
+class EventHandlerSchema(BaseModel):
+    type: str | None = Field(..., examples=['like', 'dislike', 'registration'])
+    data: EventSchema

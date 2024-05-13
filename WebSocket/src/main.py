@@ -1,15 +1,19 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import ORJSONResponse, JSONResponse
+from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
+from redis.asyncio import Redis
+from db import redis
 from contextlib import asynccontextmanager
 from services import connection
+from core.config import settings
 from api import router
-from uuid import UUID
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     connection.connects_manager = connection.ConnectionManager()
+    redis.redis = Redis(host=settings.redis.host, port=settings.redis.port)
     yield
-
+    await redis.redis.close()
 app = FastAPI(
     lifespan=lifespan,
     description="WebSocket notify services",
@@ -20,11 +24,21 @@ app = FastAPI(
 
 app.include_router(router, prefix='/api/v1')
 
+from core.handlers import require_access_token, JwtHandler
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from services.connection import get_manager, ConnectionManager
+from uuid import UUID
+
+
 @app.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: UUID):
-    await connection.get_manager().connect(user_id, websocket)
+async def websocket_endpoint(
+    websocket: WebSocket, user_id: UUID,
+    jwt_handler: JwtHandler = Depends(require_access_token),
+    manager: ConnectionManager = Depends(get_manager)):
+    await jwt_handler.get_current_user()
+    await manager.connect(user_id, websocket)
     try:
         while True:
           pass
     except WebSocketDisconnect:
-        connection.get_manager().disconnect(user_id)
+        manager.disconnect(user_id)

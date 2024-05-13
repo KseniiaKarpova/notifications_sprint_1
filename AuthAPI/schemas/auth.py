@@ -63,6 +63,7 @@ class JWTUserData(BaseModel):
     roles: list[str] | list[None] = Field(None)
     surname: str | None = Field(None)
     name: str | None = Field(None)
+    is_superuser: bool | None = Field(None)
 
 
 class UserUpdate(BaseModel):
