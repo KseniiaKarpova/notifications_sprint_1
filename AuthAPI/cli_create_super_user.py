@@ -9,6 +9,7 @@ from sqlalchemy import QueuePool
 from sqlalchemy.orm import sessionmaker
 from storages.user import UserStorage
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.exc import IntegrityError
 
 
 settings = config.APPSettings()
@@ -38,7 +39,10 @@ def create(login: str, password: str, email: str):
                 'email': email,  
             })
             session.add(instance)
-            await session.commit()
+            try:
+                await session.commit()
+            except IntegrityError:
+                return await postgres.async_engine.dispose()
         await postgres.async_engine.dispose()
     asyncio.run(save())
     print(f"Creating Super User: {login}")

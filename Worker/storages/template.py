@@ -15,8 +15,8 @@ class TemplateStorage(BaseStorage):
         except DuplicateKeyError:
             raise already_exists
 
-    async def get(self, **kwargs):
-        return await TemplateModel.find_one(kwargs)
+    async def get(self, **kwargs) -> TemplateModel:
+        return await self.document.find_one(kwargs)
 
     async def delete(self, id: UUID):
         await self.document.find({'_id': id}).delete()

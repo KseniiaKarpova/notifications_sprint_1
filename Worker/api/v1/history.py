@@ -8,7 +8,7 @@ from typing import List
 router = APIRouter(prefix='/history', tags=['History'])
 
 
-@router.post('/get', status_code=status.HTTP_200_OK, response_model=List[LogMessage])
+@router.get('', status_code=status.HTTP_200_OK, response_model=List[LogMessage])
 async def create_template(
         jwt_handler: JwtHandler = Depends(require_access_token),
         service: BaseHistoryService = Depends(get_history_service)):

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import (JSON, Enum, ForeignKey, MetaData, String, Text,
-                        UniqueConstraint, types)
+                        UniqueConstraint, types, Boolean)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import (DeclarativeBase, Mapped, backref, mapped_column,
@@ -37,6 +37,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=True)
     surname: Mapped[str] = mapped_column(String(255), nullable=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)
+    mail_verified: Mapped[bool] = mapped_column(Boolean(), default=False)
     user_roles: Mapped[list['UserRole']] = relationship(back_populates='user',
                                                         cascade='all, delete',
                                                         passive_deletes=True)
@@ -72,8 +73,8 @@ class UserRole(Base):
     role_id: Mapped[UUID] = mapped_column(ForeignKey('roles.uuid'),
                                           onupdate='CASCADE',
                                           nullable=False)
-    user: Mapped['User'] = relationship(back_populates='user_roles')
-    role: Mapped['Role'] = relationship(back_populates='user_roles')
+    user: Mapped['User'] = relationship(back_populates='user_roles', cascade='all, delete')
+    role: Mapped['Role'] = relationship(back_populates='user_roles', cascade='all, delete')
 
 
 class UserHistory(Base):
@@ -89,7 +90,7 @@ class UserHistory(Base):
 
     user_agent: Mapped[str] = mapped_column(String(255), nullable=True)
     refresh_token: Mapped[str] = mapped_column(Text(), nullable=True)
-    user: Mapped['User'] = relationship(back_populates='user_history')
+    user: Mapped['User'] = relationship(back_populates='user_history', cascade='all, delete')
 
 
 class SocialAccount(Base):
