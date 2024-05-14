@@ -172,6 +172,13 @@ class AuthHandler:
             refresh_token=refresh_token,
         )
 
+    async def login_as_superuser(self) -> LoginResponseSchema:
+        return await self.user_tokens(
+                credentials=UserLogin(
+                    login=settings.admin.login,
+                    password=settings.admin.password,
+                    agent='FAKE AGENT'))
+
 
 def get_auth_handler(
     auth: AuthJWT = Depends(),

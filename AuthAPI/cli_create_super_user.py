@@ -18,16 +18,19 @@ logging.getLogger('asyncio').setLevel(logging.WARNING)
 
 def create(login: str, password: str, email: str):
     async def save():
-        postgres.async_engine = create_async_engine(
-            settings.db_dsn,
-            poolclass=QueuePool,
-            pool_pre_ping=True, pool_size=20, pool_timeout=30)
+        try:
+            postgres.async_engine = create_async_engine(
+                settings.db_dsn,
+                poolclass=QueuePool,
+                pool_pre_ping=True, pool_size=20, pool_timeout=30)
 
-        postgres.async_session_factory = sessionmaker(
-            postgres.async_engine,
-            expire_on_commit=False,
-            autoflush=True,
-            class_=AsyncSession)
+            postgres.async_session_factory = sessionmaker(
+                postgres.async_engine,
+                expire_on_commit=False,
+                autoflush=True,
+                class_=AsyncSession)
+        except:
+            return None
 
         hashed_password = await DataHasher().generate_word_hash(secret_word=password)
         async with postgres.async_session_factory() as session:

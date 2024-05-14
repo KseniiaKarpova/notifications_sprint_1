@@ -9,7 +9,7 @@ from exceptions import user_created
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.postgres import create_async_session
 from core.config import settings
-from core.handlers import AuthHandler, JwtHandler, get_auth_handler
+from core.handlers import AuthHandler
 from async_fastapi_jwt_auth import AuthJWT
 
 
@@ -22,12 +22,14 @@ class AuthService(BaseService):
 
     async def registrate(self, data: UserCredentials):
         hashed_password = await DataHasher().generate_word_hash(secret_word=data.password)
+        self.storage.commit_mode = False
         user = await self.storage.create(params={
             'password': hashed_password,
             'login': data.login,
             'email': data.email,
         })
-        await self.broadcast.send_email(user_id=user.id)
+        await self.broadcast.send_email(user_id=user.uuid)
+        await self.storage.add_and_commit([user])
         return user_created
 
     async def registrate_super_user(self, data: UserCredentials):
