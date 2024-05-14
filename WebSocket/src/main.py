@@ -8,6 +8,7 @@ from core.config import settings
 from api import router
 
 
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     connection.connects_manager = connection.ConnectionManager()
@@ -20,7 +21,7 @@ app = FastAPI(
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
-    )
+)
 
 app.include_router(router, prefix='/api/v1')
 
@@ -39,6 +40,9 @@ async def websocket_endpoint(
     await manager.connect(user_id, websocket)
     try:
         while True:
-          pass
+            data = await websocket.receive_text()
+            await websocket.send_text(
+                f"You: {data}"
+            )
     except WebSocketDisconnect:
         manager.disconnect(user_id)

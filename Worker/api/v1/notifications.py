@@ -11,7 +11,7 @@ from core.handlers import require_access_token, JwtHandler
 router = RabbitRouter(settings.rabbit.dsn)
 
 
-def broker():
+def broker() -> RabbitBroker:
     return router.broker
 
 
@@ -23,8 +23,9 @@ async def event_handler(
 
 
 @router.subscriber(queue='info')
-async def info(message: InfoSchema, logger: Logger):
-    message = message.model_dump(exclude_none=True, exclude_unset=True)
+async def info(message: dict, logger: Logger):
+    print('#####done####')
+    logger.info('GOT GOT GOT')
 
 
 @router.subscriber(queue='film_added')

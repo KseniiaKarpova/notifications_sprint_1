@@ -71,8 +71,13 @@ class RabbitSettings(BaseSettings):
         return f"amqp://{self.user}:{self.password}@{self.host}:{self.port}"
 
 
+class CronSettings(BaseSettings):
+    sec: int = 10
+
+
+
 class APPSettings(BaseSettings):
-    project_name: str = 'Payment API'
+    project_name: str = 'Notifications API'
     redis: RedisSettings = RedisSettings()
     rabbit: RabbitSettings = RabbitSettings()
     auth: AuthSettings = AuthSettings()

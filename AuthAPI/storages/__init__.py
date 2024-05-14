@@ -147,3 +147,8 @@ class AlchemyBaseStorage(ABC):
             if self.commit_mode is True:
                 await commit_async_session(session=self.session)
         return instance
+
+    async def add_and_commit(self, instances: list):
+        for inst in instances:
+            self.session.add(inst)
+        await commit_async_session(session=self.session)

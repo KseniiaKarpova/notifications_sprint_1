@@ -9,6 +9,8 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from core.config import settings
 from api.v1.template import router as template_router
 from api.v1.history import router as history_router
+from services.periodic_notify import send_periodic_notify 
+
 
 
 @asynccontextmanager
@@ -17,6 +19,7 @@ async def custom_lifespan_context(_: FastAPI):
     await init_db.init(client=mongo.mongo_client)
     redis.redis = Redis(host=settings.redis.host, port=settings.redis.port)
     await router.broker.start()
+    await send_periodic_notify()
     yield
     mongo.mongo_client.close()
     await router.broker.close()
@@ -30,10 +33,11 @@ app = FastAPI(
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
     )
+
+
 app.include_router(router, prefix='/api/v1')
 app.include_router(template_router, prefix='/api/v1')
 app.include_router(history_router, prefix='/api/v1')
-
 
 
 @app.exception_handler(AuthJWTException)
@@ -41,3 +45,4 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
         status_code=exc.status_code, content={
             "detail": exc.message})
+
