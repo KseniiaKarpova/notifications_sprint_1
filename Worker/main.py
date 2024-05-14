@@ -9,8 +9,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from core.config import settings
 from api.v1.template import router as template_router
 from api.v1.history import router as history_router
-from services.periodic_notify import send_periodic_notify 
-
+from services.periodic_notify import send_periodic_notify
+import smtplib
+from services import email_sender
 
 
 @asynccontextmanager
@@ -20,11 +21,13 @@ async def custom_lifespan_context(_: FastAPI):
     redis.redis = Redis(host=settings.redis.host, port=settings.redis.port)
     await router.broker.start()
     await send_periodic_notify()
+    email_sender.server = smtplib.SMTP_SSL(settings.smpt.host, settings.smpt.port)
+
     yield
     mongo.mongo_client.close()
     await router.broker.close()
     await redis.redis.close()
-
+    email_sender.server.close()
 
 app = FastAPI(
     lifespan=custom_lifespan_context,

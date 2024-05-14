@@ -59,6 +59,13 @@ class RedisSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix='redis_')
 
 
+class SmptSettings(BaseSettings):
+    host: str = ...
+    port: int = ...
+    FROM: str = ...
+
+    model_config = SettingsConfigDict(env_prefix='smpt_')
+
 class RabbitSettings(BaseSettings):
     host: str = ...
     port: int = ...
@@ -75,7 +82,6 @@ class CronSettings(BaseSettings):
     sec: int = 10
 
 
-
 class APPSettings(BaseSettings):
     project_name: str = 'Notifications API'
     redis: RedisSettings = RedisSettings()
@@ -84,6 +90,7 @@ class APPSettings(BaseSettings):
     mongo: MongoSettings = MongoSettings()
     admin: AdminSettings = AdminSettings()
     websocket: WebsocketSettings = WebsocketSettings()
+    smpt: SmptSettings = SmptSettings()
 
 
 settings = APPSettings()

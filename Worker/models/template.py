@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Annotated
+from jinja2 import Environment, BaseLoader
 from fastui.forms import Textarea, fastui_form
 from pydantic import BaseModel, EmailStr, Field, SecretStr, field_validator
 from uuid import UUID
@@ -38,12 +38,15 @@ class TemplateModel(BaseMixin, Document):
 
     @field_validator('template')
     def template_validator(cls, v: str) -> str:
-        if "{user}" not in v and "{redirectUrl}" not in v:
-            if  '{' in v or '}' in v:
-                raise  HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail='Ваш шаблон не соответвует стандарту. Для автозамены имени пользователя - используйте {user} и {redirectUrl}')
-        return v
+        try:
+            env = Environment(loader=BaseLoader())
+            env.from_string(v)  # Проверка шаблона на соответствие Jinja
+            return v
+        except Exception:
+            raise  HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail='Ваш шаблон не соответвует стандарту. Для автозамены имени пользователя - используйте {user} и {redirectUrl}')
+
 
     @field_validator('schedule')
     def cron_validator(cls, v: str) -> str:
