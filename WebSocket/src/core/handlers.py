@@ -33,7 +33,8 @@ async def jwt_user_data(subject: dict):
         raise forbidden_error
     return JWTUserData(
         login=login, uuid=uuid,
-        is_superuser=subject.get('is_superuser'),)
+        is_superuser=subject.get('is_superuser'),
+        )
 
 
 class JWTBearer(HTTPBearer):

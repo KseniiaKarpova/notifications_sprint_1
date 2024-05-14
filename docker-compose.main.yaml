@@ -106,6 +106,10 @@ services:
   ws:
     container_name: ws
     command: uvicorn main:app --host 0.0.0.0 --port 9992 --reload
+    ports:
+      - '9992:9992'
+    env_file:
+      - .env
     build:
       context: WebSocket
       dockerfile: Dockerfile
@@ -113,20 +117,6 @@ services:
       - ./WebSocket/src:/src
     networks:
       - application_network
-
-
-  celery:
-    build:
-      context: Worker
-      dockerfile: dockerfile
-    command: celery -A scheduler beat --loglevel=info
-    env_file:
-      - .env
-    depends_on:
-      - redis
-    networks:
-      - application_network
-
 
 networks:
   application_network:

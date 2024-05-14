@@ -9,6 +9,7 @@ from models import TypeMessage, EventMessage
 from fastapi import HTTPException, status
 import re
 
+
 class LoginForm(BaseModel):
     email: EmailStr = Field(
         title='Email Address', description='Enter whatever value you like', json_schema_extra={'autocomplete': 'email'}
@@ -20,16 +21,15 @@ class LoginForm(BaseModel):
     )
 
 class TemplateModel(BaseMixin, Document):
-    template_id: UUID
     name: str = Field(description='Название шаблона')
-    template: Annotated[str, Textarea(rows=30)] = Field(None, description='Напишите шаблон сообщения. Используйте {user} в шаблоне для отображения имени клиента и {redirectUrl} для ссылки.')
-    event: list[EventMessage] | None = Field(None, title='Отправить сообщение по событию?')
-    type: list[TypeMessage] | None = Field(None, title='В какой канал отправить?')
-    redirectUrl : str | None = Field(None, description='Ссылка куда перейти')
-    expirationTimestamp : int | None = Field(None, description="срок действия ссылки (в часах)")
-    date_send: datetime | None = Field(None, title='Когда отпавить сообщение?', description='Выбери дату для одноразовой рассылки')
+    template: str = Field(None, description='Напишите шаблон сообщения. Используйте {user} в шаблоне для отображения имени клиента и {redirectUrl} для ссылки.')
+    event: str | None = Field(None, title='Отправить сообщение по событию?', examples=[EventMessage.like.value, EventMessage.dislike.value, EventMessage.registration.value])
+    type: str | None = Field(None, title='В какой канал отправить?', examples=[TypeMessage.email.value, TypeMessage.notify.value])
+    redirectUrl: str | None = Field(None, description='Ссылка куда перейти')
+    expirationTimestamp: int | None = Field(None, description="срок действия ссылки (в часах)")
+    date_send: date | None = Field(None, title='Когда отпавить сообщение?', description='Выбери дату для одноразовой рассылки')
     schedule: str | None = Field(
-        "* * * * *" , description='Требуется повторить рассылку? Укажи как часто: "ДеньНедели Мес День Час минуты"'
+        None , description='Требуется повторить рассылку? Укажи как часто: "ДеньНедели Мес День Час минуты"'
     )
 
     class Settings:
@@ -48,6 +48,8 @@ class TemplateModel(BaseMixin, Document):
     @field_validator('schedule')
     def cron_validator(cls, v: str) -> str:
         cron_pattern = r'^(\*|\d+)\s(\*|\d+)\s(\*|\d+)\s(\*|\d+)\s(\*|\d+)$'
+        if not v:
+            return v
         if not bool(re.match(cron_pattern, v)):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,

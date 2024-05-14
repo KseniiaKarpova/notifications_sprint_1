@@ -3,6 +3,8 @@ from beanie import Document
 from models import BaseMixin
 from datetime import date
 from models import TypeMessage
+from pydantic import Field
+
 
 class Message(BaseMixin, Document):
     sender_id: UUID
@@ -15,7 +17,7 @@ class Message(BaseMixin, Document):
 
 
 class LogMessage(BaseMixin, Document):
-    dt: date
+    dt: date = Field(default_factory=lambda: date.today())
     user: UUID
     type: TypeMessage
     text: str

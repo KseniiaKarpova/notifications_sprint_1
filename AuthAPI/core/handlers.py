@@ -43,8 +43,10 @@ async def jwt_user_data(subject: dict):
         raise HTTPException(status_code=http.HTTPStatus.FORBIDDEN, detail='Invalid authorization code.')
     return JWTUserData(
         login=login, uuid=uuid,
-        roles=subject.get('roles'), surname=subject.get('surname'),
-        name=subject.get('name'))
+        roles=subject.get('roles'), 
+        surname=subject.get('surname'),
+        name=subject.get('name'),
+        is_superuser=subject.get('is_superuser'))
 
 
 class JWTBearer(HTTPBearer):
@@ -150,7 +152,8 @@ class AuthHandler:
             'uuid': str(user.uuid),
             'roles': roles,
             'surname': user.surname,
-            'name': user.name
+            'name': user.name,
+            'is_superuser': user.is_superuser,
         })
 
         access_token = await self.generate_access_token(subject=subject)

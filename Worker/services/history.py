@@ -1,8 +1,9 @@
 from storages.template import TemplateStorage
+from storages.history import HistoryStorage
+from models.messages import LogMessage
 from services import BaseService
 from abc import abstractmethod
 from fastapi import Depends
-from storages.history import HistoryStorage
 from uuid import UUID
 
 
@@ -10,12 +11,12 @@ class BaseHistoryService(BaseService):
     def __init__(
             self,
             storage: TemplateStorage,
-            dto: HistoryStorage = None) -> None:
+            dto: LogMessage = None) -> None:
         self.storage = storage
         self.dto = dto
 
     @abstractmethod
-    async def add(self, data: HistoryStorage):
+    async def add(self, data: LogMessage):
         pass
 
     @abstractmethod
@@ -29,7 +30,7 @@ class HistoryService(BaseHistoryService):
     async def get(self, id: UUID):
         return await self.storage.get(user=id)
 
-    async def add(self, data: HistoryStorage):
+    async def add(self, data: LogMessage):
         pass
 
 
