@@ -3,8 +3,9 @@ from beanie import Document
 from models import BaseMixin
 from datetime import date
 from models import TypeMessage
-from pydantic import Field
-
+from pydantic import Field, BaseModel
+from typing import List
+from jinja2 import Environment
 
 class Message(BaseMixin, Document):
     sender_id: UUID
@@ -25,3 +26,9 @@ class LogMessage(BaseMixin, Document):
     class Settings:
         name = "history"
         use_state_management = True
+
+
+class Email(BaseModel):
+    To: List[str]
+    Subject: str = 'Онлайн кинотеатр'
+    Message : Environment

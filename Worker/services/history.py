@@ -31,10 +31,13 @@ class HistoryService(BaseHistoryService):
         return await self.storage.get(user=id)
 
     async def add(self, data: LogMessage):
-        pass
+        return await self.storage.add(data=data)
 
 
 def get_history_service(
         storage: HistoryStorage = Depends(HistoryStorage),
         ) -> BaseHistoryService:
+    return HistoryService(storage=storage)
+
+def get_logger(storage: HistoryStorage = HistoryStorage()) -> BaseHistoryService:
     return HistoryService(storage=storage)
