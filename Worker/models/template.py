@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from typing import Annotated
 from fastui.forms import Textarea, fastui_form
 from pydantic import BaseModel, EmailStr, Field, SecretStr, field_validator

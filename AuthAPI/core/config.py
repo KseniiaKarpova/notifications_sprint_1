@@ -46,6 +46,25 @@ class JaegerSettings(BaseSettings):
     model_config: str = SettingsConfigDict(env_prefix='jaeger_')
 
 
+class WorkerService(BaseSettings):
+    host: str = ...
+    port: str = ...
+
+    model_config: str = SettingsConfigDict(env_prefix='worker_')
+
+    @property
+    def url(self):
+        return f"http://{self.host}:{self.port}/api/v1"
+
+
+class AdminSettings(BaseSettings):
+    login: str = ...
+    password: str = ...
+    email: str = ...
+
+    model_config: str = SettingsConfigDict(env_prefix='admin_')
+
+
 class APPSettings(BaseSettings):
     project_name: str = 'Auth API'
     db: PostgresDbSettings = PostgresDbSettings()
@@ -54,6 +73,8 @@ class APPSettings(BaseSettings):
     auth: AuthSettings = AuthSettings()
     hasher: HasherSettings = HasherSettings()
     jaeger: JaegerSettings = JaegerSettings()
+    worker: WorkerService = WorkerService()
+    admin: AdminSettings = AdminSettings()
 
 
 settings = APPSettings()

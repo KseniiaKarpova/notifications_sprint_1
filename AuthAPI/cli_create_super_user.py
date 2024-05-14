@@ -43,6 +43,8 @@ def create(login: str, password: str, email: str):
                 await session.commit()
             except IntegrityError:
                 return await postgres.async_engine.dispose()
+            except:
+                return None
         await postgres.async_engine.dispose()
     asyncio.run(save())
     print(f"Creating Super User: {login}")
