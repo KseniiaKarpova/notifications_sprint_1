@@ -32,7 +32,9 @@ async def info(message: InfoSchema, logger: Logger,
 async def _info(
         info: InfoMessage,
         data: InfoSchema,
-        broker: RabbitBroker = Depends(broker)):
+        broker: RabbitBroker = Depends(broker),
+        jwt_handler: JwtHandler = Depends(require_access_token)):
+    await jwt_handler.is_superuser()
     return await broker.publish(queue='info', message=data)
 
 

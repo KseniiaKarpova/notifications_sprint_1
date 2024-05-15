@@ -67,7 +67,6 @@ class EventHandlerService(BaseService):
                 type=TypeMessage.notify.value,
                 text=text_to_send,
             ))
-            print(f"{text_to_send} was sent to {user}")
 
     async def compile_text(self, user: dict, template: str):
         user_name = user.get('name')
