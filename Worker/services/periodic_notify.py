@@ -26,5 +26,4 @@ async def send_periodic_notify():
         else:
             d = item.date_send.strftime("%d/%m/%Y %H:%M")
             if d==now:
-                # отправить на рассылку сообщение
-                pass
+                await router.broker.publish(queue='info', message=InfoSchema(template=item.template))
