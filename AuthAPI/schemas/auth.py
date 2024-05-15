@@ -5,12 +5,29 @@ from core.config import settings
 from core.hasher import DataHasher
 from pydantic import BaseModel, Field, validator
 from core.hasher import fake
+import re
+
+
+class EmailValidator:
+    EMAIL_REGEX = re.compile(
+        r"^(?=.{1,256})(?=.{1,64}@.{1,255}$)(?=\S)([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,})$"
+    )
+
+    @staticmethod
+    def is_valid(email: str) -> bool:
+        return re.match(EmailValidator.EMAIL_REGEX, email) is not None
 
 
 class UserCredentials(BaseModel):
     login: str | None = Field(None, description="login")
     password: str
     email: str
+
+    @validator('email')
+    def validate_email(cls, value):
+        if not EmailValidator.is_valid(value):
+            raise ValueError('Invalid email address')
+        return value
 
 
 class UserLogin(BaseModel):
