@@ -35,11 +35,13 @@ class EventHandlerService(BaseService):
             logger: HistoryStorage,
             ws_notifier: WebsocketService,
             auth_service: AuthService,
+            email: bool = False
             ) -> None:
         self.storage = storage
         self.ws_notifier = ws_notifier
         self.logger = logger
         self.auth_service = auth_service
+        self.email = email
 
     async def proceed(self, sender_id: UUID, reciver_id: UUID, event: str):
         template_obj = await self.storage.get(event=event, type=TypeMessage.notify.value)
@@ -71,12 +73,17 @@ class EventHandlerService(BaseService):
         return template.format(user=name)
 
     async def send_notification(self, user_id: UUID, text):
-        await self.ws_notifier.notify(user_id=user_id, text=text)
         await self.logger.add(data=LogMessage(
             user=user_id,
             type=TypeMessage.notify.value,
             text=text,
         ))
+        await self.ws_notifier.notify(user_id=user_id, text=text)
+        if self.email is True:
+            ## тут нужно вызвать нужного метода
+            ## который отправит письмо в почту
+            pass
+
 
 
 def get_event_service():
