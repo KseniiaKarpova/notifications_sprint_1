@@ -1,16 +1,15 @@
 from storages.template import TemplateStorage
 from storages.history import HistoryStorage
 from models.messages import LogMessage
-from models.template import TemplateModel
 from services import BaseService
 from services.auth import AuthService, super_user_login_required
 from uuid import UUID
-from datetime import datetime
 from models import TypeMessage
 from core.config import settings
 from aiohttp import ClientSession
-from models import TypeMessage, EventMessage
-
+from models import TypeMessage
+from fastapi import Depends
+from utils.sendgrid import emailer, SendGridEmailer
 
 
 class WebsocketService(BaseService):
@@ -35,11 +34,13 @@ class EventHandlerService(BaseService):
             logger: HistoryStorage,
             ws_notifier: WebsocketService,
             auth_service: AuthService,
+            smtp: SendGridEmailer,
             ) -> None:
         self.storage = storage
         self.ws_notifier = ws_notifier
         self.logger = logger
         self.auth_service = auth_service
+        self.smtp = smtp
 
     async def proceed(self, sender_id: UUID, reciver_id: UUID, event: str):
         template_obj = await self.storage.get(event=event, type=TypeMessage.notify.value)
@@ -48,8 +49,8 @@ class EventHandlerService(BaseService):
             name=user.get('name'), surname=user.get('surname'), template=template_obj.template)
         await self.send_notification(user_id=reciver_id, text=text_to_send)
 
-    async def mass_notification(self, template: str, email: bool = False):
-        setattr(self, 'email', email)
+    async def mass_notification(self, template: str, send_email: bool = False):
+        setattr(self, 'send_email', send_email)
         get = True
         page = 1
         while get is True:
@@ -60,29 +61,29 @@ class EventHandlerService(BaseService):
                 get = False
             await self.notify_users(users=users, template=template)
 
-    async def notify_users(self, users: list, template: str):
+    async def notify_users(self, users: list[dict], template: str):
+        send_email = getattr(self, 'send_email', False)
+        emails = []
         for user in users:
             text_to_send = await self.compile_text(
                 name=user.get('name'), surname=user.get('surname'), template=template)
-            await self.send_notification(user_id=user['uuid'], text=text_to_send)
+            await self.send_notification(user_id=user['uuid'], text=text_to_send, user_email=user.get('email'))
+            emails.append(user['email'])
+        if send_email is True:
+            await self.smtp.mass_email(recievers=emails, text=text_to_send)
 
-    async def compile_text(self, name: dict, surname: str, template: str):
+    async def compile_text(self, name: str, surname: str, template: str):
         name = ''.join(name) if name else ''
         name.join(surname) if surname else ''
         return template.format(user=name)
 
-    async def send_notification(self, user_id: UUID, text):
-        email = getattr(self, 'email', False)
+    async def send_notification(self, user_id: UUID, text, user_email: str):
         await self.logger.add(data=LogMessage(
             user=user_id,
             type=TypeMessage.notify.value,
             text=text,
         ))
         await self.ws_notifier.notify(user_id=user_id, text=text)
-        if email is True:
-            ## тут нужно вызвать нужного метода
-            ## который отправит письмо в почту
-            pass
 
 
 def get_event_service():
@@ -91,4 +92,5 @@ def get_event_service():
         ws_notifier=WebsocketService(),
         auth_service=AuthService(),
         logger=HistoryStorage(),
+        smtp=emailer,
     )

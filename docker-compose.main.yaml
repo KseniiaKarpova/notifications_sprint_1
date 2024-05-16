@@ -103,6 +103,8 @@ services:
     depends_on:
       worker_rabbit:
         condition: service_healthy
+      smtp:
+        condition: service_started
 
   ws:
     container_name: ws
@@ -118,6 +120,21 @@ services:
       - ./WebSocket/src:/src
     networks:
       - application_network
+
+  smtp:
+    image: mailhog/mailhog:latest
+    container_name: smtp_server
+    platform: linux/amd64
+    env_file:
+      - .env
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"
+    networks:
+      - application_network
+    mem_limit: 512m
+    mem_reservation: 128M
+    cpus: 0.5
 
 networks:
   application_network:

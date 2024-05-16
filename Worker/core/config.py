@@ -71,9 +71,17 @@ class RabbitSettings(BaseSettings):
         return f"amqp://{self.user}:{self.password}@{self.host}:{self.port}"
 
 
-class CronSettings(BaseSettings):
-    sec: int = 10
+class SmtpSettings(BaseSettings):
+    host: str = ...
+    port: int = ...
+    from_user: str = ...
 
+    model_config = SettingsConfigDict(env_prefix='smtp_')
+
+
+class SendGridSettings(BaseSettings):
+    api: str = ...
+    model_config = SettingsConfigDict(env_prefix='sendgrid_')
 
 
 class APPSettings(BaseSettings):
@@ -84,6 +92,8 @@ class APPSettings(BaseSettings):
     mongo: MongoSettings = MongoSettings()
     admin: AdminSettings = AdminSettings()
     websocket: WebsocketSettings = WebsocketSettings()
+    smtp: SmtpSettings = SmtpSettings()
+    sendgrid: SendGridSettings = SendGridSettings()
 
 
 settings = APPSettings()

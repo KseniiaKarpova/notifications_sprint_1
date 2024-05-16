@@ -25,7 +25,7 @@ async def event_handler(
 @router.subscriber(queue='info')
 async def info(message: InfoSchema, logger: Logger,
                service: EventHandlerService = Depends(get_event_service)):
-    await service.mass_notification(template=message.template, email=message.email)
+    await service.mass_notification(template=message.template, send_email=message.email)
 
 
 @router.post("/{info}")
@@ -33,8 +33,9 @@ async def _info(
         info: InfoMessage,
         data: InfoSchema,
         broker: RabbitBroker = Depends(broker),
-        jwt_handler: JwtHandler = Depends(require_access_token)):
-    await jwt_handler.is_superuser()
+        #jwt_handler: JwtHandler = Depends(require_access_token)
+        ):
+    #await jwt_handler.is_superuser()
     return await broker.publish(queue='info', message=data)
 
 

@@ -70,3 +70,8 @@ ADMIN_EMAIL=admin@mail.com
 
 WORKER_HOST=worker_api
 WORKER_PORT=9998
+
+SMTP_HOST=smtp
+SMTP_PORT=1025
+SMTP_FROM_USER=someone@gmail.com
+SENDGRID_API=12dhqz228dncoqz/rn
