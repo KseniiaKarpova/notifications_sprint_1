@@ -25,7 +25,7 @@ async def event_handler(
 @router.subscriber(queue='info')
 async def info(message: InfoSchema, logger: Logger,
                service: EventHandlerService = Depends(get_event_service)):
-    await service.mass_notification(template=message.template)
+    await service.mass_notification(template=message.template, email=message.email)
 
 
 @router.post("/{info}")
