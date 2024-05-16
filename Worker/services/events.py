@@ -43,9 +43,10 @@ class EventHandlerService(BaseService):
 
     async def proceed(self, sender_id: UUID, reciver_id: UUID, event: str):
         template_obj = await self.storage.get(event=event, type=TypeMessage.notify.value)
-        user_data = await self.auth_service.get_user_by_id(user_id=sender_id)
-        text_to_send = await self.compile_text(user=user_data, template=template_obj.template)
-        await self.ws_notifier.notify(user_id=reciver_id, text=text_to_send)
+        user = await self.auth_service.get_user_by_id(user_id=sender_id)
+        text_to_send = await self.compile_text(
+            name=user.get('name'), surname=user.get('surname'), template=template_obj.template)
+        await self.send_notification(user_id=reciver_id, text=text_to_send)
 
     async def mass_notification(self, template: str):
         get = True
@@ -60,20 +61,22 @@ class EventHandlerService(BaseService):
 
     async def notify_users(self, users: list, template: str):
         for user in users:
-            text_to_send = await self.compile_text(user=user, template=template)
-            await self.ws_notifier.notify(user_id=user['uuid'], text=text_to_send)
-            await self.logger.add(data=LogMessage(
-                user=user['uuid'],
-                type=TypeMessage.notify.value,
-                text=text_to_send,
-            ))
+            text_to_send = await self.compile_text(
+                name=user.get('name'), surname=user.get('surname'), template=template)
+            await self.send_notification(user_id=user['uuid'], text=text_to_send)
 
-    async def compile_text(self, user: dict, template: str):
-        user_name = user.get('name')
-        user_surname = user.get('surname')
-        name = ''.join(user_name) if user_name else ''
-        name.join(user_surname) if user_surname else ''
+    async def compile_text(self, name: dict, surname: str, template: str):
+        name = ''.join(name) if name else ''
+        name.join(surname) if surname else ''
         return template.format(user=name)
+
+    async def send_notification(self, user_id: UUID, text):
+        await self.ws_notifier.notify(user_id=user_id, text=text)
+        await self.logger.add(data=LogMessage(
+            user=user_id,
+            type=TypeMessage.notify.value,
+            text=text,
+        ))
 
 
 def get_event_service():
