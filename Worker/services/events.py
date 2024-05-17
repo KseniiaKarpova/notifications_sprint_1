@@ -4,24 +4,21 @@ from models.messages import LogMessage
 from services import BaseService
 from services.auth import AuthService, super_user_login_required
 from uuid import UUID
-from datetime import datetime
-from models import TypeMessage
 from core.config import settings
 from aiohttp import ClientSession
 from models import TypeMessage, EventMessage
 
 
-
 class WebsocketService(BaseService):
     @super_user_login_required
     async def notify_user(self, user_id: UUID, text: str, access_token: str):
-        session = ClientSession(headers = {'Authorization': f'Bearer {access_token}'})
+        session = ClientSession(headers={'Authorization': f'Bearer {access_token}'})
         async with session.post(
-            url=settings.websocket.send_message_url,
-            json={
-                'user_id': str(user_id),
-                'text': text
-            }) as response:
+                url=settings.websocket.send_message_url,
+                json={
+                    'user_id': str(user_id),
+                    'text': text
+                }) as response:
             json_data = await response.json()
         await session.close()
         return json_data
@@ -34,13 +31,13 @@ class EventHandlerService(BaseService):
             logger: HistoryStorage,
             ws_notifier: WebsocketService,
             auth_service: AuthService,
-            ) -> None:
+    ) -> None:
         self.storage = storage
         self.ws_notifier = ws_notifier
         self.logger = logger
         self.auth_service = auth_service
 
-    async def proceed(self, sender_id: UUID, reciver_id: UUID,event: str):
+    async def proceed(self, sender_id: UUID, reciver_id: UUID, event: str):
         template_obj = await self.storage.get(event=event, type=TypeMessage.notify.value)
         user_data = await self.auth_service.get_user_by_id(user_id=sender_id)
 

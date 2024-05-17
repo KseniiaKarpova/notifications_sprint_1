@@ -9,8 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from core.config import settings
 from api.v1.template import router as template_router
 from api.v1.history import router as history_router
-from services.periodic_notify import send_periodic_notify 
-
+from services.periodic_notify import send_periodic_notify
 
 
 @asynccontextmanager
@@ -32,7 +31,7 @@ app = FastAPI(
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
-    )
+)
 
 
 app.include_router(router, prefix='/api/v1')
@@ -45,4 +44,3 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
         status_code=exc.status_code, content={
             "detail": exc.message})
-

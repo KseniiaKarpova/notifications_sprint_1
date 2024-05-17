@@ -14,8 +14,8 @@ from async_fastapi_jwt_auth import AuthJWT
 
 
 class AuthService(BaseService):
-    def __init__(self, 
-                 storage: UserStorage, 
+    def __init__(self,
+                 storage: UserStorage,
                  broadcast: BroadcastService = None):
         self.storage = storage
         self.broadcast = broadcast
@@ -48,7 +48,7 @@ class AuthService(BaseService):
             'is_superuser': True
         })
         return status
-    
+
     async def get_superuser(self):
         return await self.storage.get(conditions={
             'login': settings.admin.login,

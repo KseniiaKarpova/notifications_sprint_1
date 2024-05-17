@@ -43,7 +43,7 @@ async def jwt_user_data(subject: dict):
         raise HTTPException(status_code=http.HTTPStatus.FORBIDDEN, detail='Invalid authorization code.')
     return JWTUserData(
         login=login, uuid=uuid,
-        roles=subject.get('roles'), 
+        roles=subject.get('roles'),
         surname=subject.get('surname'),
         name=subject.get('name'),
         is_superuser=subject.get('is_superuser'))
@@ -174,10 +174,10 @@ class AuthHandler:
 
     async def login_as_superuser(self) -> LoginResponseSchema:
         return await self.user_tokens(
-                credentials=UserLogin(
-                    login=settings.admin.login,
-                    password=settings.admin.password,
-                    agent='FAKE AGENT'))
+            credentials=UserLogin(
+                login=settings.admin.login,
+                password=settings.admin.password,
+                agent='FAKE AGENT'))
 
 
 def get_auth_handler(

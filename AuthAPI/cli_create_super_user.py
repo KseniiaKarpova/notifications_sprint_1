@@ -29,7 +29,7 @@ def create(login: str, password: str, email: str):
                 expire_on_commit=False,
                 autoflush=True,
                 class_=AsyncSession)
-        except:
+        except BaseException:
             return None
 
         hashed_password = await DataHasher().generate_word_hash(secret_word=password)
@@ -46,7 +46,7 @@ def create(login: str, password: str, email: str):
                 await session.commit()
             except IntegrityError:
                 return await postgres.async_engine.dispose()
-            except:
+            except BaseException:
                 return None
         await postgres.async_engine.dispose()
     asyncio.run(save())

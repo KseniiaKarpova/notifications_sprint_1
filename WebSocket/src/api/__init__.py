@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, Body
 from services.connection import get_manager, ConnectionManager
-from uuid import UUID
 from core.handlers import require_access_token, JwtHandler
 from services.connection import ConnectionManager
 from schemas import SendMessageSchema

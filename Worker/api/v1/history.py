@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Body, Depends
+from fastapi import APIRouter, status, Depends
 from services.history import get_history_service, BaseHistoryService
 from models.messages import LogMessage
 from core.handlers import require_access_token, JwtHandler

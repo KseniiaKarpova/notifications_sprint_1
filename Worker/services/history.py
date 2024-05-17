@@ -24,7 +24,6 @@ class BaseHistoryService(BaseService):
         pass
 
 
-
 class HistoryService(BaseHistoryService):
 
     async def get(self, id: UUID):
@@ -36,5 +35,5 @@ class HistoryService(BaseHistoryService):
 
 def get_history_service(
         storage: HistoryStorage = Depends(HistoryStorage),
-        ) -> BaseHistoryService:
+) -> BaseHistoryService:
     return HistoryService(storage=storage)

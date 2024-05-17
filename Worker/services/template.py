@@ -38,8 +38,7 @@ class TemplateService(BaseTemplateService):
         return await self.storage.update(id=id, data=data)
 
 
-
 def get_template_service(
         storage: TemplateStorage = Depends(TemplateStorage),
-        ) -> BaseTemplateService:
+) -> BaseTemplateService:
     return TemplateService(storage=storage)

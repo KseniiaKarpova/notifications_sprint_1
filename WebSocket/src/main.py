@@ -1,3 +1,7 @@
+from uuid import UUID
+from services.connection import get_manager, ConnectionManager
+from fastapi import Depends, WebSocket, WebSocketDisconnect
+from core.handlers import require_access_token, JwtHandler
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from redis.asyncio import Redis
@@ -6,7 +10,6 @@ from contextlib import asynccontextmanager
 from services import connection
 from core.config import settings
 from api import router
-
 
 
 @asynccontextmanager
@@ -25,17 +28,12 @@ app = FastAPI(
 
 app.include_router(router, prefix='/api/v1')
 
-from core.handlers import require_access_token, JwtHandler
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
-from services.connection import get_manager, ConnectionManager
-from uuid import UUID
-
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(
-    websocket: WebSocket, user_id: UUID,
-    jwt_handler: JwtHandler = Depends(require_access_token),
-    manager: ConnectionManager = Depends(get_manager)):
+        websocket: WebSocket, user_id: UUID,
+        jwt_handler: JwtHandler = Depends(require_access_token),
+        manager: ConnectionManager = Depends(get_manager)):
     await jwt_handler.get_current_user()
     await manager.connect(user_id, websocket)
     try:

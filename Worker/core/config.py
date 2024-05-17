@@ -66,6 +66,7 @@ class RabbitSettings(BaseSettings):
     password: str = ...
 
     model_config = SettingsConfigDict(env_prefix='rabbit_')
+
     @property
     def dsn(self):
         return f"amqp://{self.user}:{self.password}@{self.host}:{self.port}"
@@ -73,7 +74,6 @@ class RabbitSettings(BaseSettings):
 
 class CronSettings(BaseSettings):
     sec: int = 10
-
 
 
 class APPSettings(BaseSettings):

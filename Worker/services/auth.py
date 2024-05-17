@@ -29,7 +29,7 @@ class AuthService(BaseService):
 
     @super_user_login_required
     async def get_user_by_id(self, user_id: UUID, access_token: str) -> dict:
-        session = ClientSession(headers = {'Authorization': f'Bearer {access_token}'})
+        session = ClientSession(headers={'Authorization': f'Bearer {access_token}'})
         async with session.get(url=f"{settings.auth.api_url}/user/{user_id}") as response:
             json_data = await response.json()
         await session.close()

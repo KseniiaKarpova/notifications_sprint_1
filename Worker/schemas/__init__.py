@@ -14,11 +14,11 @@ class LikeDislike(BaseModel):
 
 
 class EventSchema(BaseModel):
-    ## if all the fields are None then the new film added
+    # if all the fields are None then the new film added
     reciver_id: UUID | None = Field(None, description='the user who should be notified')
     sender_id: UUID | None = Field(None, description='the user who made event')
-    ## these fields below for like and dislike events
-    ## that is why they are optional
+    # these fields below for like and dislike events
+    # that is why they are optional
     review_id: UUID | None = Field(None, description="the film's review")
     film_id: UUID | None = Field(None, description="the film's id")
 

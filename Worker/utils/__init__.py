@@ -25,4 +25,3 @@ def check_now_is_valid_cron(cron: str):
         return False
 
     return True
-

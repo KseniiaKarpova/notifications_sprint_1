@@ -11,5 +11,5 @@ class BroadcastService(BaseService):
 
     async def send_email(self, user_id: UUID):
         tokens = await self.auth.login_as_superuser()
-        session = ClientSession(headers = {'Authorization': f'Bearer {tokens.access_token}'})
+        session = ClientSession(headers={'Authorization': f'Bearer {tokens.access_token}'})
         await session.close()
