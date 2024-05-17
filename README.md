@@ -8,4 +8,4 @@ docker-compose -f docker-compose.main.yaml -f docker-compose.db.yaml -f docker-c
 ```
 
 ## Описание проекта:
-1. 
+Чекпоинт для создания шаблона сообщения (template), емайл\сокет рассылка и логирование и получение истории уведомлений (history) находится в сервисе Worker
