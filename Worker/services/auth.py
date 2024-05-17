@@ -16,21 +16,26 @@ def super_user_login_required(func):
             }
             async with session.post(url=f"{settings.auth.api_url}/auth/login", json=credentials) as response:
                 if response.status != 200:
-                    # Handle login failure here, for example raise an exception
-                    raise Exception("Login failed")
+                    raise Exception("Auth Login failed")
                 json_data = await response.json()
-                # Call the original function with the received JSON data
                 if json_data:
                     return await func(*args, **kwargs, access_token=json_data.get('access_token'))
     return wrapper
 
 
 class AuthService(BaseService):
-
     @super_user_login_required
     async def get_user_by_id(self, user_id: UUID, access_token: str) -> dict:
         session = ClientSession(headers={'Authorization': f'Bearer {access_token}'})
         async with session.get(url=f"{settings.auth.api_url}/user/{user_id}") as response:
+            json_data = await response.json()
+        await session.close()
+        return json_data
+
+    @super_user_login_required
+    async def get_users(self, page: int, size: int, access_token: str):
+        session = ClientSession(headers = {'Authorization': f'Bearer {access_token}'})
+        async with session.get(url=f"{settings.auth.api_url}/user?page={page}&size={size}") as response:
             json_data = await response.json()
         await session.close()
         return json_data

@@ -24,7 +24,8 @@ class EventSchema(BaseModel):
 
 
 class InfoSchema(BaseModel):
-    film_id: UUID | None = Field(None, description="the film's id")
+    template: str = Field(..., description="the text to send")
+    email: bool = Field(..., description="send to the email or not")
 
 
 class EventHandlerSchema(BaseModel):

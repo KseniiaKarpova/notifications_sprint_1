@@ -23,14 +23,20 @@ async def event_handler(
 
 
 @router.subscriber(queue='info')
-async def info(message: dict, logger: Logger):
-    print('#####done####')
-    logger.info('GOT GOT GOT')
+async def info(message: InfoSchema, logger: Logger,
+               service: EventHandlerService = Depends(get_event_service)):
+    await service.mass_notification(template=message.template, send_email=message.email)
 
 
-@router.subscriber(queue='film_added')
-async def film_added(message: InfoSchema, logger: Logger):
-    message = message.model_dump(exclude_none=True, exclude_unset=True)
+@router.post("/{info}")
+async def _info(
+        info: InfoMessage,
+        data: InfoSchema,
+        broker: RabbitBroker = Depends(broker),
+        #jwt_handler: JwtHandler = Depends(require_access_token)
+        ):
+    #await jwt_handler.is_superuser()
+    return await broker.publish(queue='info', message=data)
 
 
 @router.post("/{event}")
@@ -39,17 +45,9 @@ async def _event(
         data: EventSchema | None = None,
         broker: RabbitBroker = Depends(broker),
         jwt_handler: JwtHandler = Depends(require_access_token)):
-    current_user = await jwt_handler.is_superuser()
+    await jwt_handler.is_superuser()
     handler_data = EventHandlerSchema(
         type=event,
         data=data.model_dump(exclude_none=True, exclude_unset=True),
     )
     return await broker.publish(queue='event_handler', message=handler_data)
-
-
-@router.post("/{info}")
-async def _info(
-        info: InfoMessage,
-        data: InfoSchema,
-        broker: RabbitBroker = Depends(broker)):
-    return await broker.publish(queue=info, message=data)
