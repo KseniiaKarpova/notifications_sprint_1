@@ -22,7 +22,7 @@ from authlib.integrations.httpx_client import AsyncOAuth2Client
 
 from middleware.main import setup_middleware
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from redis.asyncio import Redis  # type: ignore
+from redis.asyncio import Redis
 
 
 settings = config.APPSettings()

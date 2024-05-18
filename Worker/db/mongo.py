@@ -2,10 +2,10 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi import Depends
 
 
-mongo_client: AsyncIOMotorClient | None = None  # type: ignore
+mongo_client: AsyncIOMotorClient | None = None
 
 
-async def get_mongo_client() -> AsyncIOMotorClient:  # type: ignore
+async def get_mongo_client() -> AsyncIOMotorClient:
     return mongo_client
 
 
